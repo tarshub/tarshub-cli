@@ -26,17 +26,35 @@ export interface InstallResult {
   warnings: string[];
 }
 
-async function promptOverwrite(filePath: string): Promise<boolean> {
+type OverwriteAll = { value: boolean };
+
+/**
+ * Ask whether to overwrite one file, or all remaining conflicts.
+ * `a` / `all` sets the ref so later files skip the prompt.
+ */
+async function promptOverwrite(filePath: string, overwriteAll: OverwriteAll): Promise<boolean> {
+  if (overwriteAll.value) return true;
   if (!process.stdin.isTTY) return false;
   return new Promise((resolve) => {
     const rl = readline.createInterface({
       input: process.stdin,
       output: process.stdout,
     });
-    rl.question(`File ${filePath} already exists. Overwrite? [y/N] `, (answer) => {
-      rl.close();
-      resolve(answer.trim().toLowerCase() === "y");
-    });
+    rl.question(
+      `File ${filePath} already exists. Overwrite? [y]es / [n]o / [a]ll remaining: `,
+      (answer) => {
+        rl.close();
+        const a = answer.trim().toLowerCase();
+        if (a === "a" || a === "all") {
+          overwriteAll.value = true;
+          resolve(true);
+        } else if (a === "y" || a === "yes") {
+          resolve(true);
+        } else {
+          resolve(false);
+        }
+      },
+    );
   });
 }
 
@@ -139,13 +157,14 @@ export async function installCommand(
 
   const written: string[] = [];
   const skipped: string[] = [];
+  const overwriteAll: OverwriteAll = { value: false };
 
   for (const { filePath, content } of fileContents) {
     const destPath = path.join(process.cwd(), filePath);
     const exists = fs.existsSync(destPath);
 
     if (exists && !options.force) {
-      const overwrite = await promptOverwrite(filePath);
+      const overwrite = await promptOverwrite(filePath, overwriteAll);
       if (!overwrite) {
         skipped.push(filePath);
         continue;

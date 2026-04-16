@@ -35,9 +35,12 @@ Commands:
   search       Search packages by keyword
 
 Flags (install only):
-  --force              Overwrite existing files without prompting
+  --force              Overwrite all existing files without prompting (no y/n/a questions)
   --dry-run            Preview what would be installed without writing files
   --version <tag>      Install a specific version (git tag)
+
+When a file exists and --force is not used, you are prompted: [y]es this file,
+[n]o skip, or [a]ll remaining (overwrite every other conflict in this run).
 
 Examples:
   npx tarshub @johndoe/my-repo

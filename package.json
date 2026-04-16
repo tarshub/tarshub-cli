@@ -1,6 +1,6 @@
 {
   "name": "tarshub",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "Install agent context packages from TarsHub",
   "type": "module",
   "bin": {

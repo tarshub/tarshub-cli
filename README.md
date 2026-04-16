@@ -30,9 +30,11 @@ npx tarshub install @johndoe/my-repo --force
 
 | Flag | Description |
 |---|---|
-| `--force` | Overwrite existing files without prompting |
+| `--force` | Overwrite **all** existing files without prompting |
 | `--dry-run` | Preview what would be installed without writing any files |
 | `--version <tag>` | Install a specific version (git tag, e.g. `1.2.0`) |
+
+If a file already exists and you did not pass `--force`, the CLI asks: **`y`** (this file only), **`n`** (skip), or **`a`** (overwrite this and all remaining conflicts in this install).
 
 ### `info`
 
