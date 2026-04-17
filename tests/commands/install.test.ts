@@ -74,6 +74,29 @@ describe("installCommand — dry run", () => {
 });
 
 describe("installCommand — happy path", () => {
+  it("writes files when registry uses merged repo slug (no subpath field)", async () => {
+    setupMocks({
+      repo: "johndoe/tarshub-nextjs-supabase-saas/packages/nested",
+      files: ["AGENTS.md"],
+    });
+    const spy = vi.spyOn(fetchModule, "fetchText").mockResolvedValue({
+      ok: true,
+      status: 200,
+      text: "# ok",
+    });
+
+    const result = await installCommand("@johndoe/tarshub-nextjs-supabase-saas/packages/nested", {
+      force: true,
+    });
+
+    expect(result.written).toEqual(["AGENTS.md"]);
+    expect(spy).toHaveBeenCalledWith(
+      expect.stringMatching(
+        /raw\.githubusercontent\.com\/johndoe\/tarshub-nextjs-supabase-saas\/[^/]+\/packages\/nested\/AGENTS\.md/,
+      ),
+    );
+  });
+
   it("writes all files when none exist", async () => {
     setupMocks();
 

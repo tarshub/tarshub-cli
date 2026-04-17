@@ -16,7 +16,7 @@ export async function infoCommand(packageArg: string): Promise<InfoResult> {
   const parsed = parsePackageArg(packageArg);
   if (!parsed) {
     throw new CliError(
-      `Invalid package format "${packageArg}". Use: @<github-username>/<repo>[/<subpath>]`,
+      `Invalid package format "${packageArg}". Use @owner/repo or @owner/repo/path — not GitHub blob/tree URLs.`,
     );
   }
 

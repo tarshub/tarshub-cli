@@ -49,6 +49,19 @@ describe("fetchRegistryEntry", () => {
     }
   });
 
+  it("on 404, suggests id without main when path looks like branch/folders", async () => {
+    const err = Object.assign(new Error("HTTP 404"), { status: 404 });
+    vi.spyOn(fetchModule, "fetchJson").mockRejectedValue(err);
+
+    await expect(
+      fetchRegistryEntry(
+        "PatrickJS/awesome-cursorrules/main/rules/react-mobx-cursorrules-prompt-file",
+      ),
+    ).rejects.toThrow(
+      /PatrickJS\/awesome-cursorrules\/rules\/react-mobx-cursorrules-prompt-file/,
+    );
+  });
+
   it("throws a CliError wrapping a generic network error", async () => {
     vi.spyOn(fetchModule, "fetchJson").mockRejectedValue(
       new Error("Network error. Check your connection and try again."),

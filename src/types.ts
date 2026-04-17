@@ -9,8 +9,9 @@ export interface TarsHubJson {
 
 /** Shape of packages/.../tarshub.json in tarshub/registry */
 export interface RegistryEntry extends TarsHubJson {
+  /** `owner/repo` or merged `owner/repo/nested/path` (preferred). */
   repo: string;
-  /** Empty string or omitted = package at repo root; otherwise path inside the repo */
+  /** Legacy: path inside repo when `repo` was only `owner/repo`. Omit when using merged `repo`. */
   subpath?: string;
 }
 

@@ -1,5 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { parsePackageArg, looksLikePackageRef } from "../src/utils.js";
+import {
+  parsePackageArg,
+  looksLikePackageRef,
+  splitRepoRef,
+  githubLocationFromRegistryEntry,
+  suggestPackageIdWithoutBranchSegment,
+} from "../src/utils.js";
 
 describe("parsePackageArg", () => {
   it("parses @owner/repo", () => {
@@ -46,6 +52,69 @@ describe("parsePackageArg", () => {
 
   it("returns null for path traversal segments", () => {
     expect(parsePackageArg("@johndoe/../evil")).toBeNull();
+  });
+
+  it("returns null for GitHub blob/tree URL segments", () => {
+    expect(
+      parsePackageArg(
+        "@PatrickJS/awesome-cursorrules/blob/main/rules/react-mobx-cursorrules-prompt-file",
+      ),
+    ).toBeNull();
+  });
+});
+
+describe("splitRepoRef", () => {
+  it("splits owner/repo from nested path", () => {
+    expect(splitRepoRef("PatrickJS/awesome-cursorrules/rules/foo")).toEqual({
+      githubRepo: "PatrickJS/awesome-cursorrules",
+      pathInRepo: "rules/foo",
+    });
+  });
+
+  it("handles two segments only", () => {
+    expect(splitRepoRef("johndoe/pkg")).toEqual({
+      githubRepo: "johndoe/pkg",
+      pathInRepo: "",
+    });
+  });
+});
+
+describe("githubLocationFromRegistryEntry", () => {
+  it("uses merged repo when subpath is absent", () => {
+    expect(
+      githubLocationFromRegistryEntry({
+        repo: "PatrickJS/awesome-cursorrules/rules/foo",
+      }),
+    ).toEqual({
+      githubRepo: "PatrickJS/awesome-cursorrules",
+      pathInRepo: "rules/foo",
+    });
+  });
+
+  it("merges legacy repo + subpath", () => {
+    expect(
+      githubLocationFromRegistryEntry({
+        repo: "PatrickJS/awesome-cursorrules",
+        subpath: "rules/foo",
+      }),
+    ).toEqual({
+      githubRepo: "PatrickJS/awesome-cursorrules",
+      pathInRepo: "rules/foo",
+    });
+  });
+});
+
+describe("suggestPackageIdWithoutBranchSegment", () => {
+  it("strips main after owner/repo", () => {
+    expect(
+      suggestPackageIdWithoutBranchSegment(
+        "PatrickJS/awesome-cursorrules/main/rules/react-mobx-cursorrules-prompt-file",
+      ),
+    ).toBe("PatrickJS/awesome-cursorrules/rules/react-mobx-cursorrules-prompt-file");
+  });
+
+  it("returns null when no branch-like segment", () => {
+    expect(suggestPackageIdWithoutBranchSegment("PatrickJS/awesome-cursorrules/rules/foo")).toBeNull();
   });
 });
 

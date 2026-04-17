@@ -3,7 +3,7 @@ import * as path from "node:path";
 import * as readline from "node:readline";
 import { fetchText, repoFileUrl, joinRepoPath } from "../fetch.js";
 import { fetchRegistryEntry, resolveContentBranch } from "../registry.js";
-import { parsePackageArg } from "../utils.js";
+import { parsePackageArg, githubLocationFromRegistryEntry } from "../utils.js";
 import {
   validateFileCount,
   validateFilePath,
@@ -65,15 +65,14 @@ export async function installCommand(
   const parsed = parsePackageArg(packageArg);
   if (!parsed) {
     throw new CliError(
-      `Invalid package format "${packageArg}". Use: @<github-username>/<repo>[/<subpath>]`,
+      `Invalid package format "${packageArg}". Use @owner/repo or @owner/repo/path/to/package — not GitHub blob/tree URLs.`,
     );
   }
 
   const warnings: string[] = [];
 
   const registryEntry = await fetchRegistryEntry(parsed.id);
-  const repo = registryEntry.repo;
-  const subpath = registryEntry.subpath?.trim() || undefined;
+  const { githubRepo, pathInRepo } = githubLocationFromRegistryEntry(registryEntry);
 
   const allFiles = registryEntry.files ?? [];
   if (allFiles.length === 0) {
@@ -117,14 +116,14 @@ export async function installCommand(
     };
   }
 
-  const branch = await resolveContentBranch(repo, subpath, validFiles[0], options.version);
+  const branch = await resolveContentBranch(githubRepo, pathInRepo, validFiles[0], options.version);
 
   let totalBytes = 0;
   const fileContents: Array<{ filePath: string; content: string }> = [];
 
   for (const filePath of validFiles) {
-    const rel = joinRepoPath(subpath, filePath);
-    const url = repoFileUrl(repo, branch, rel);
+    const rel = joinRepoPath(pathInRepo || undefined, filePath);
+    const url = repoFileUrl(githubRepo, branch, rel);
     let ok: boolean;
     let text: string;
     try {

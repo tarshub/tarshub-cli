@@ -8,6 +8,7 @@ import {
 } from "./fetch.js";
 import type { PackageIndex, RegistryEntry, TarsHubJson } from "./types.js";
 import { CliError } from "./errors.js";
+import { suggestPackageIdWithoutBranchSegment } from "./utils.js";
 
 export async function fetchRegistryEntry(packageId: string): Promise<RegistryEntry> {
   const url = registryManifestUrl(packageId);
@@ -16,8 +17,13 @@ export async function fetchRegistryEntry(packageId: string): Promise<RegistryEnt
   } catch (err: unknown) {
     const e = err as Error & { status?: number };
     if (e.status === 404) {
+      const alt = suggestPackageIdWithoutBranchSegment(packageId);
+      const hint =
+        alt != null
+          ? ` In GitHub URLs, "main"/"master" is the branch, not a folder — try @${alt} if that matches the folder you want.`
+          : "";
       throw new CliError(
-        `Package @${packageId} not found on TarsHub. Check the name or submit the repo at https://tarshub.com/publish`,
+        `Package @${packageId} not found on TarsHub.${hint} Or submit the repo at https://tarshub.com/publish`,
       );
     }
     throw new CliError(e.message ?? "Network error. Check your connection and try again.");
@@ -26,21 +32,22 @@ export async function fetchRegistryEntry(packageId: string): Promise<RegistryEnt
 
 /**
  * Find a ref (branch or tag) that contains the first listed file.
+ * `githubRepo` is always `owner/repo`; `pathInRepo` is the package root inside the repo (may be empty).
  */
 export async function resolveContentBranch(
-  repo: string,
-  subpath: string | undefined,
+  githubRepo: string,
+  pathInRepo: string,
   sampleFile: string,
   version?: string,
 ): Promise<string> {
-  const rel = joinRepoPath(subpath, sampleFile);
+  const rel = joinRepoPath(pathInRepo || undefined, sampleFile);
   const branches = version ? [`v${version}`, version, "main", "master"] : ["main", "master"];
   for (const b of branches) {
-    const { ok } = await fetchText(repoFileUrl(repo, b, rel));
+    const { ok } = await fetchText(repoFileUrl(githubRepo, b, rel));
     if (ok) return b;
   }
   throw new CliError(
-    `Could not find ${sampleFile} in ${repo} (tried: ${branches.join(", ")}).`,
+    `Could not find ${sampleFile} in ${githubRepo} (tried: ${branches.join(", ")}).`,
   );
 }
 
