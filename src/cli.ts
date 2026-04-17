@@ -5,7 +5,7 @@ import { installCommand } from "./commands/install.js";
 import { infoCommand } from "./commands/info.js";
 import { searchCommand } from "./commands/search.js";
 import { CliError } from "./errors.js";
-import { looksLikePackageRef } from "./utils.js";
+import { looksLikePackageRef, splitRepoRef } from "./utils.js";
 
 function getVersion(): string {
   try {
@@ -23,9 +23,9 @@ function printHelp(version: string): void {
 tarshub v${version} — Agent context package manager
 
 Usage:
-  npx tarshub @<github-username>/<repo>[/<subpath>] [flags]
-  npx tarshub install @<github-username>/<repo>[/<subpath>] [flags]
-  npx tarshub info    @<github-username>/<repo>[/<subpath>]
+  npx tarshub @<github-username>/<repo>[/<path>] [flags]
+  npx tarshub install @<github-username>/<repo>[/<path>] [flags]
+  npx tarshub info    @<github-username>/<repo>[/<path>]
   npx tarshub search  <query>
 
 Commands:
@@ -93,10 +93,9 @@ function printInfoResult(result: Awaited<ReturnType<typeof infoCommand>>): void 
   if (result.keywords.length > 0) {
     console.log(`\nKeywords: ${result.keywords.join(", ")}`);
   }
-  console.log(`Repo:     https://github.com/${result.repo}`);
-  if (result.subpath) {
-    console.log(`Subpath:  ${result.subpath}`);
-  }
+  const { githubRepo } = splitRepoRef(result.repo);
+  console.log(`Repo:     ${result.repo}`);
+  console.log(`GitHub:   https://github.com/${githubRepo}`);
   console.log(`Install:  npx tarshub ${result.packageArg}\n`);
 }
 
@@ -138,7 +137,7 @@ async function main(): Promise<void> {
     const packageArg = rest[0];
     if (!packageArg || packageArg.startsWith("--")) {
       throw new CliError(
-        "Missing package argument.\nUsage: npx tarshub install @<github-username>/<repo>[/<subpath>]",
+        "Missing package argument.\nUsage: npx tarshub install @<github-username>/<repo>[/<path>]",
       );
     }
     const force = rest.includes("--force");
@@ -155,7 +154,7 @@ async function main(): Promise<void> {
     const packageArg = rest[0];
     if (!packageArg || packageArg.startsWith("--")) {
       throw new CliError(
-        "Missing package argument.\nUsage: npx tarshub info @<github-username>/<repo>[/<subpath>]",
+        "Missing package argument.\nUsage: npx tarshub info @<github-username>/<repo>[/<path>]",
       );
     }
     const result = await infoCommand(packageArg);
@@ -173,7 +172,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  // Shorthand: npx tarshub @owner/repo[/subpath] [--flags]
+  // Shorthand: npx tarshub @owner/repo[/path] [--flags]
   if (looksLikePackageRef(command)) {
     const packageArg = command;
     const restFlags = rest;

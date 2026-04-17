@@ -3,7 +3,6 @@ import {
   parsePackageArg,
   looksLikePackageRef,
   splitRepoRef,
-  githubLocationFromRegistryEntry,
   suggestPackageIdWithoutBranchSegment,
 } from "../src/utils.js";
 
@@ -75,31 +74,6 @@ describe("splitRepoRef", () => {
     expect(splitRepoRef("johndoe/pkg")).toEqual({
       githubRepo: "johndoe/pkg",
       pathInRepo: "",
-    });
-  });
-});
-
-describe("githubLocationFromRegistryEntry", () => {
-  it("uses merged repo when subpath is absent", () => {
-    expect(
-      githubLocationFromRegistryEntry({
-        repo: "PatrickJS/awesome-cursorrules/rules/foo",
-      }),
-    ).toEqual({
-      githubRepo: "PatrickJS/awesome-cursorrules",
-      pathInRepo: "rules/foo",
-    });
-  });
-
-  it("merges legacy repo + subpath", () => {
-    expect(
-      githubLocationFromRegistryEntry({
-        repo: "PatrickJS/awesome-cursorrules",
-        subpath: "rules/foo",
-      }),
-    ).toEqual({
-      githubRepo: "PatrickJS/awesome-cursorrules",
-      pathInRepo: "rules/foo",
     });
   });
 });

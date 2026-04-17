@@ -1,5 +1,3 @@
-import type { RegistryEntry } from "./types.js";
-
 export interface ParsedPackageArg {
   /**
    * Normalized package id without @, mirrors registry + GitHub:
@@ -19,18 +17,6 @@ export function splitRepoRef(fullSlug: string): { githubRepo: string; pathInRepo
   const githubRepo = `${parts[0]}/${parts[1]}`;
   const pathInRepo = parts.slice(2).join("/");
   return { githubRepo, pathInRepo };
-}
-
-/**
- * Registry manifests may use a merged `repo` (owner/repo/path) or legacy `repo` + `subpath`.
- */
-export function githubLocationFromRegistryEntry(
-  entry: Pick<RegistryEntry, "repo" | "subpath">,
-): { githubRepo: string; pathInRepo: string } {
-  const repo = entry.repo.trim();
-  const sub = entry.subpath?.trim();
-  const fullSlug = sub ? `${repo}/${sub}` : repo;
-  return splitRepoRef(fullSlug);
 }
 
 /** Common default branch names that appear in github.com/.../tree/<branch>/path but are not folder names. */

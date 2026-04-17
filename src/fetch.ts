@@ -46,9 +46,9 @@ export function registryManifestUrl(packageId: string): string {
   return `${REGISTRY_BASE}/packages/${path}/tarshub.json`;
 }
 
-/** Join optional repo subpath (package root inside GitHub repo) with a file path. */
-export function joinRepoPath(subpath: string | undefined, filePath: string): string {
-  const s = (subpath ?? "").replace(/^\/+|\/+$/g, "");
+/** Join optional path inside the GitHub repo (package root) with a relative file path. */
+export function joinRepoPath(pathInRepo: string | undefined, filePath: string): string {
+  const s = (pathInRepo ?? "").replace(/^\/+|\/+$/g, "");
   if (!s) return filePath;
   return `${s}/${filePath}`;
 }

@@ -3,7 +3,7 @@ import * as path from "node:path";
 import * as readline from "node:readline";
 import { fetchText, repoFileUrl, joinRepoPath } from "../fetch.js";
 import { fetchRegistryEntry, resolveContentBranch } from "../registry.js";
-import { parsePackageArg, githubLocationFromRegistryEntry } from "../utils.js";
+import { parsePackageArg, splitRepoRef } from "../utils.js";
 import {
   validateFileCount,
   validateFilePath,
@@ -72,7 +72,7 @@ export async function installCommand(
   const warnings: string[] = [];
 
   const registryEntry = await fetchRegistryEntry(parsed.id);
-  const { githubRepo, pathInRepo } = githubLocationFromRegistryEntry(registryEntry);
+  const { githubRepo, pathInRepo } = splitRepoRef(registryEntry.repo.trim());
 
   const allFiles = registryEntry.files ?? [];
   if (allFiles.length === 0) {

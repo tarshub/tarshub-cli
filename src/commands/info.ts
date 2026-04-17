@@ -8,8 +8,8 @@ export interface InfoResult {
   description: string;
   files: string[];
   keywords: string[];
+  /** Full slug: owner/repo or owner/repo/path */
   repo: string;
-  subpath: string;
 }
 
 export async function infoCommand(packageArg: string): Promise<InfoResult> {
@@ -29,6 +29,5 @@ export async function infoCommand(packageArg: string): Promise<InfoResult> {
     files: registryEntry.files ?? [],
     keywords: registryEntry.keywords ?? [],
     repo: registryEntry.repo,
-    subpath: registryEntry.subpath ?? "",
   };
 }

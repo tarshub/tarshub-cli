@@ -74,7 +74,7 @@ describe("installCommand — dry run", () => {
 });
 
 describe("installCommand — happy path", () => {
-  it("writes files when registry uses merged repo slug (no subpath field)", async () => {
+  it("writes files when registry repo is a nested slug", async () => {
     setupMocks({
       repo: "johndoe/tarshub-nextjs-supabase-saas/packages/nested",
       files: ["AGENTS.md"],

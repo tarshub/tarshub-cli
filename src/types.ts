@@ -9,10 +9,8 @@ export interface TarsHubJson {
 
 /** Shape of packages/.../tarshub.json in tarshub/registry */
 export interface RegistryEntry extends TarsHubJson {
-  /** `owner/repo` or merged `owner/repo/nested/path` (preferred). */
+  /** `owner/repo` or `owner/repo/nested/path` for packages in a subfolder. */
   repo: string;
-  /** Legacy: path inside repo when `repo` was only `owner/repo`. Omit when using merged `repo`. */
-  subpath?: string;
 }
 
 export interface IndexPackage {
@@ -21,7 +19,6 @@ export interface IndexPackage {
   author: string;
   avatar: string;
   repo: string;
-  subpath?: string;
   description: string;
   keywords?: string[];
   files: number;
